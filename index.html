@@ -25,25 +25,9 @@ body{
     width:90%;
     max-width:420px;
     text-align:center;
-    box-shadow:0 10px 25px rgba(0,0,0,0.3);
 }
 
 h2{ color:#2a5298; }
-
-input{
-    padding:8px;
-    width:70%;
-    margin-top:10px;
-}
-
-button{
-    padding:8px 12px;
-    margin-left:5px;
-    background:#2a5298;
-    color:white;
-    border:none;
-    border-radius:6px;
-}
 
 #reader{ margin-top:20px; }
 
@@ -58,34 +42,29 @@ button{
 
 <div class="container">
     <h2>Smart Library Scanner</h2>
-
-    <div>
-        <input id="ipInput" placeholder="Pico IP or pico.local">
-        <button onclick="saveIP()">Save</button>
-    </div>
-
     <div id="reader"></div>
     <div id="status" class="status">Waiting for scan...</div>
 </div>
 
 <script>
-let pico_ip = localStorage.getItem("pico_ip") || "pico.local";
-document.getElementById("ipInput").value = pico_ip;
 
-function saveIP(){
-    pico_ip = document.getElementById("ipInput").value;
-    localStorage.setItem("pico_ip", pico_ip);
-}
+const pico_ip = "192.168.137.238";   // YOUR PICO IP
 
-function onScanSuccess(decodedText){
+function onScanSuccess(decodedText) {
+
     document.getElementById("status").innerHTML =
         "Scanned: " + decodedText;
 
     fetch("http://" + pico_ip + "/scan?code=" + decodedText);
 }
 
-let scanner = new Html5QrcodeScanner("reader",{fps:10,qrbox:250});
+let scanner = new Html5QrcodeScanner(
+    "reader",
+    { fps: 10, qrbox: 250 }
+);
+
 scanner.render(onScanSuccess);
+
 </script>
 
 </body>
