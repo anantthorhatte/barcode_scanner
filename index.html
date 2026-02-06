@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Smart Library Scanner</title>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
@@ -25,15 +26,47 @@ body{
     width:90%;
     max-width:420px;
     text-align:center;
+    box-shadow:0 10px 25px rgba(0,0,0,0.3);
 }
 
-h2{ color:#2a5298; }
+h2{
+    color:#2a5298;
+    margin-bottom:5px;
+}
 
-#reader{ margin-top:20px; }
+.subtitle{
+    font-size:14px;
+    color:#666;
+    margin-bottom:15px;
+}
+
+.settings{
+    margin-bottom:15px;
+}
+
+.settings input{
+    width:100%;
+    padding:10px;
+    font-size:14px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    outline:none;
+}
+
+#reader{
+    margin-top:15px;
+}
 
 .status{
     margin-top:15px;
     font-weight:bold;
+    color:#1e3c72;
+}
+
+.footer{
+    margin-top:10px;
+    font-size:12px;
+    color:#888;
 }
 </style>
 </head>
@@ -42,29 +75,57 @@ h2{ color:#2a5298; }
 
 <div class="container">
     <h2>Smart Library Scanner</h2>
+    <div class="subtitle">Scan book barcode</div>
+
+    <div class="settings">
+        <input type="text" id="picoIp" placeholder="Enter Pico IP (e.g. 10.82.16.254)">
+    </div>
+
     <div id="reader"></div>
+
     <div id="status" class="status">Waiting for scan...</div>
+    <div class="footer">Pico-based Library System</div>
 </div>
 
 <script>
+// ---------- Load & Save Pico IP ----------
+const ipInput = document.getElementById("picoIp");
+const statusDiv = document.getElementById("status");
 
-const pico_ip = "10.82.16.254";   // YOUR PICO IP
-
-function onScanSuccess(decodedText) {
-
-    document.getElementById("status").innerHTML =
-        "Scanned: " + decodedText;
-
-    fetch("http://" + pico_ip + "/scan?code=" + decodedText);
+const savedIp = localStorage.getItem("pico_ip");
+if(savedIp){
+    ipInput.value = savedIp;
 }
 
+ipInput.addEventListener("change", () => {
+    localStorage.setItem("pico_ip", ipInput.value.trim());
+});
+
+// ---------- Scanner Callback ----------
+function onScanSuccess(decodedText) {
+
+    const pico_ip = ipInput.value.trim();
+
+    if(!pico_ip){
+        statusDiv.innerHTML = "❌ Please enter Pico IP first";
+        return;
+    }
+
+    statusDiv.innerHTML = "Scanned: " + decodedText;
+
+    fetch("http://" + pico_ip + "/scan?code=" + encodeURIComponent(decodedText), {
+        method: "GET",
+        mode: "no-cors"   // REQUIRED for HTTPS → HTTP
+    });
+}
+
+// ---------- Start Scanner ----------
 let scanner = new Html5QrcodeScanner(
     "reader",
     { fps: 10, qrbox: 250 }
 );
 
 scanner.render(onScanSuccess);
-
 </script>
 
 </body>
